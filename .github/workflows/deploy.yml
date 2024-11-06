@@ -1,0 +1,33 @@
+name: Deploy Static Page to S3
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-action/configure-aws-credentials@v3.0.2
+        with:
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTION_ROLE_ARN }}
+          aws-region: eu-central-1
+
+      - name: Checkout
+        uses: actions/checkout@v3.5.3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
+        run: aws s3 sync ./build s3://sonpst7396-s3
+
+        
